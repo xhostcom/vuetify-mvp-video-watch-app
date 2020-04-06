@@ -1,0 +1,70 @@
+<template>
+  <v-app>
+    <v-app-bar app color="primary">
+      <v-toolbar-title class="headline text-uppercase">
+        <v-btn text to="/">Vue Videocasts</v-btn>
+      </v-toolbar-title>
+      <v-btn text to="/admin/videos" v-if="currentUser.admin">Admin</v-btn>
+      <v-spacer></v-spacer>
+      <div v-if="currentUser.name">
+        {{ currentUser.name }}
+        <v-btn text class="mr-2" @click="logoutUser">Logout</v-btn>
+      </div>
+      <div v-else>
+        <v-btn text class="mr-2" to="/login">Login</v-btn>
+        <v-btn text class="mr-2" to="/registration">Register</v-btn>
+      </div>
+      <v-btn to="/" icon>
+    <v-icon>refresh</v-icon>
+    </v-btn>
+    </v-app-bar>
+    <v-content>
+    <router-view />
+
+    </v-content>
+    <v-snackbar
+      v-for="(snackbar, index) in snackbars.filter(s => s.showing)"
+      :key="snackbar.text + Math.random()"
+      v-model="snackbar.showing"
+      :timeout="snackbar.timeout"
+      :color="snackbar.color"
+      :style="`bottom: ${(index * 60) + 8}px`"
+    >
+      {{snackbar.text}}
+
+      <v-btn text @click="snackbar.showing = false">
+        Close
+      </v-btn>
+    </v-snackbar>
+    <Footer />
+  </v-app>
+</template>
+<script>
+import Footer from '@/components/Footer'
+import { mapState } from 'vuex';
+export default {
+  name: 'App',
+  created(){
+    this.$store.dispatch('videos/loadAll');
+    this.$store.dispatch('users/loadCurrent');
+    this.$store.dispatch('tags/loadAll');
+  },
+  components: {
+    Footer
+  },
+  computed: {
+    ...mapState({
+      currentUser: state => state.users.currentUser,
+      snackbars: state => state.snackbar.snackbars
+    })
+  },
+  data: () => ({
+    //
+  }),
+  methods: {
+    logoutUser() {
+      this.$store.dispatch("users/logout");
+    }
+  },
+};
+</script>
